@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+  background-color: #f7fafc;
+  color: #0f172a; /* IMPORTANT */
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+a {
+  @apply transition-colors duration-200;
+}
