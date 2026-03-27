@@ -1,6 +1,8 @@
+import { getAuthUser } from "../utils/auth";
 import { useEffect, useState } from "react";
 import { getUserById, updateUser } from "../services/getUserService";
 import { getApplicationsByUserId, updateApplication } from "../services/applicationService";
+import { getJobById } from "../services/jobService";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -16,7 +18,7 @@ function ProfilePage() {
   const [savingApp, setSavingApp] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("authUser");
+    const storedUser = getAuthUser();
 
     if (!storedUser) {
       setError("No logged in user found");
@@ -24,15 +26,25 @@ function ProfilePage() {
       return;
     }
 
-    const parsedUser = JSON.parse(storedUser);
+    const parsedUser = storedUser;
 
     Promise.all([
       getUserById(parsedUser.id),
       getApplicationsByUserId(parsedUser.id),
     ])
-      .then(([userData, applicationData]) => {
+      .then(async ([userData, applicationData]) => {
         setUser(userData);
-        setApplications(applicationData);
+        const enriched = await Promise.all(
+          applicationData.map(async (app) => {
+            try {
+              const job = await getJobById(app.jobId);
+              return { ...app, jobTitle: job?.title, companyName: job?.companyName, jobLocation: job?.location, jobType: job?.jobType };
+            } catch {
+              return app;
+            }
+          })
+        );
+        setApplications(enriched);
         setLoading(false);
       })
       .catch((err) => {
@@ -251,14 +263,6 @@ function ProfilePage() {
                 <label className={labelCls}>Semester</label>
                 <input type="number" min="1" name="semester" value={editData.semester} onChange={handleEditChange} className={inputCls} />
               </div>
-              <div>
-                <label className={labelCls}>CV URL</label>
-                <input name="cvUrl" value={editData.cvUrl} onChange={handleEditChange} placeholder="https://..." className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Profile Image URL</label>
-                <input name="profileImageUrl" value={editData.profileImageUrl} onChange={handleEditChange} placeholder="https://..." className={inputCls} />
-              </div>
               <div className="sm:col-span-2">
                 <label className={labelCls}>About Me</label>
                 <textarea
@@ -287,80 +291,11 @@ function ProfilePage() {
                   value={[user.street, user.postalCode, user.city].filter(Boolean).join(", ")}
                 />
               </div>
-              {user.cvUrl && (
-                <div className="sm:col-span-2">
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-app-muted">CV</p>
-                    <a href={user.cvUrl} target="_blank" rel="noopener noreferrer" className="mt-1 text-sm font-medium text-[#0F4E7D] hover:underline">
-                      {user.cvUrl}
-                    </a>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Applications */}
-      <div className="rounded-3xl border border-app-border bg-white p-6 shadow-soft">
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-app-text">My Applications</h2>
-          <p className="text-sm text-app-muted">Jobs you have applied for.</p>
-        </div>
-
-        {applications.length === 0 ? (
-          <p className="text-app-muted">You have not applied to any jobs yet.</p>
-        ) : (
-          <div className="space-y-4">
-            {applications.map((application) => (
-              <div
-                key={application.id}
-                className="rounded-2xl border border-app-border bg-slate-50 p-4"
-              >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-app-text">
-                      Job ID: {application.jobId}
-                    </p>
-                    <p className="text-sm text-app-muted">
-                      Applied:{" "}
-                      {application.appliedAt
-                        ? new Date(application.appliedAt).toLocaleString()
-                        : "-"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={application.status} />
-                    {(application.status === "APPLIED" || application.status === "REVIEWING") && (
-                      <button
-                        onClick={() => startEditingApp(application)}
-                        className="rounded-xl border border-[#0F4E7D] px-3 py-1 text-xs font-semibold text-[#0F4E7D] hover:bg-[#0F4E7D] hover:text-white transition"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {application.coverLetter && (
-                  <div className="mt-3">
-                    <p className="text-xs font-medium uppercase tracking-wide text-app-muted">Cover Letter</p>
-                    <p className="mt-1 text-sm text-app-text">{application.coverLetter}</p>
-                  </div>
-                )}
-
-                {application.reviewNote && (
-                  <div className="mt-3">
-                    <p className="text-xs font-medium uppercase tracking-wide text-app-muted">Review Note</p>
-                    <p className="mt-1 text-sm text-app-text">{application.reviewNote}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
 
     {/* Edit Application Modal */}

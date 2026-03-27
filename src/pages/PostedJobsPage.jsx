@@ -1,3 +1,4 @@
+import { getAuthUser } from "../utils/auth";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getJobsByCreatedByUserId, deleteJob } from "../services/jobService";
@@ -15,7 +16,7 @@ function PostedJobsPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("authUser");
+    const storedUser = getAuthUser();
 
     if (!storedUser) {
       setError("No logged in user found");
@@ -23,7 +24,7 @@ function PostedJobsPage() {
       return;
     }
 
-    const parsedUser = JSON.parse(storedUser);
+    const parsedUser = storedUser;
 
     Promise.all([
       getJobsByCreatedByUserId(parsedUser.id),

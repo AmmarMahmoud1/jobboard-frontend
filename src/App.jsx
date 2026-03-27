@@ -9,6 +9,7 @@ import MainLayout from "./components/layout/MainLayout";
 import PostedJobsPage from "./pages/PostedJobsPage";
 import ReceivedApplicationsPage from "./pages/ReceivedApplicationsPage";
 import MyApplicationsPage from "./pages/MyApplicationsPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/my-jobs" element={<PostedJobsPage />} />
         <Route path="/received-applications" element={<ReceivedApplicationsPage />} />
         <Route path="/my-applications" element={<MyApplicationsPage />} />
+        <Route path="/admin" element={<AdminDashboardPage />} />
       </Route>
 
       <Route path="/login" element={<LoginPage />} />

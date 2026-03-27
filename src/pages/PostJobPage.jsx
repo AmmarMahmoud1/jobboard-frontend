@@ -1,3 +1,4 @@
+import { getAuthUser } from "../utils/auth";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createJob } from "../services/jobService";
@@ -31,7 +32,7 @@ function PostJobPage() {
   const [formData, setFormData] = useState(EMPTY_FORM);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("authUser");
+    const storedUser = getAuthUser();
 
     if (!storedUser) {
       setError("You must be logged in to post a job.");
@@ -39,7 +40,7 @@ function PostJobPage() {
     }
 
     try {
-      const parsedUser = JSON.parse(storedUser);
+      const parsedUser = storedUser;
       setFormData((prev) => ({ ...prev, createdByUserId: parsedUser.id }));
     } catch {
       setError("Invalid user data. Please log in again.");

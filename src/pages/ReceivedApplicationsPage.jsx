@@ -1,3 +1,4 @@
+import { getAuthUser } from "../utils/auth";
 import { useEffect, useState } from "react";
 import {
   getApplicationsForCreator,
@@ -13,7 +14,7 @@ function ReceivedApplicationsPage() {
   const [updatingId, setUpdatingId] = useState("");
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("authUser");
+    const storedUser = getAuthUser();
 
     if (!storedUser) {
       setError("No logged in user found");
@@ -21,7 +22,7 @@ function ReceivedApplicationsPage() {
       return;
     }
 
-    const parsedUser = JSON.parse(storedUser);
+    const parsedUser = storedUser;
 
     getApplicationsForCreator(parsedUser.id)
       .then(async (data) => {
@@ -139,14 +140,6 @@ function ReceivedApplicationsPage() {
                       <p className="text-sm text-app-muted">{application.applicantEmail}</p>
                     )}
                   </div>
-
-                  {/* Applied date */}
-                  <p className="text-xs text-slate-400">
-                    Applied:{" "}
-                    {application.appliedAt
-                      ? new Date(application.appliedAt).toLocaleString()
-                      : "—"}
-                  </p>
 
                   {/* Cover Letter */}
                   {application.coverLetter && (

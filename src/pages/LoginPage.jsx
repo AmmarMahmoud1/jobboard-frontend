@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/auth/AuthLayout";
 import { loginUser } from "../services/authService";
+import { setAuthUser } from "../utils/auth";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ function LoginPage() {
     email: "",
     password: "",
   });
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,7 +31,7 @@ function LoginPage() {
 
     try {
       const user = await loginUser(formData);
-      localStorage.setItem("authUser", JSON.stringify(user));
+      setAuthUser(user, rememberMe);
       navigate("/");
     } catch (err) {
       setError(err.message || "Login failed");
@@ -71,6 +73,16 @@ function LoginPage() {
             className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
           />
         </div>
+
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 accent-[#0F4E7D]"
+          />
+          <span className="text-sm text-slate-600">Remember me</span>
+        </label>
 
         {error && (
           <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">

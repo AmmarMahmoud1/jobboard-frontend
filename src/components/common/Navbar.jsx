@@ -1,3 +1,4 @@
+import { getAuthUser, clearAuthUser } from "../../utils/auth";
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -15,14 +16,14 @@ const CATEGORIES = [
 
 function NavBar() {
   const navigate = useNavigate();
-  const authUser = JSON.parse(localStorage.getItem("authUser"));
+  const authUser = getAuthUser();
   const [catOpen, setCatOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const catTimer = useRef(null);
   const userTimer = useRef(null);
 
   function handleLogout() {
-    localStorage.removeItem("authUser");
+    clearAuthUser();
     navigate("/login");
   }
 
@@ -128,12 +129,15 @@ function NavBar() {
         <div className="flex items-center gap-4">
           {authUser ? (
             <>
-              <Link
-                to="/post-job"
-                className="bg-[#0F4E7D] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-[#0A3A5D] transition-all"
-              >
-                Post a Job
-              </Link>
+              {/* Post a Job — COMPANY and ADMIN only */}
+              {(authUser.role === "COMPANY" || authUser.role === "ADMIN") && (
+                <Link
+                  to="/post-job"
+                  className="bg-[#0F4E7D] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-[#0A3A5D] transition-all"
+                >
+                  Post a Job
+                </Link>
+              )}
 
               {/* User dropdown */}
               <div
@@ -165,7 +169,7 @@ function NavBar() {
                     <div className="h-2" />
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-lg py-2">
 
-                      {/* Profile */}
+                      {/* Account — all roles */}
                       <p className="px-4 pt-1 pb-2 text-xs font-bold uppercase tracking-widest text-slate-400">
                         Account
                       </p>
@@ -176,34 +180,58 @@ function NavBar() {
                       >
                         <span>👤</span> My Profile
                       </Link>
-                      <Link
-                        to="/my-applications"
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#0F4E7D]"
-                        onClick={() => setUserOpen(false)}
-                      >
-                        <span>📋</span> My Applications
-                      </Link>
 
-                      <div className="my-1 border-t border-slate-100" />
+                      {/* Student only */}
+                      {authUser.role === "STUDENT" && (
+                        <Link
+                          to="/my-applications"
+                          className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#0F4E7D]"
+                          onClick={() => setUserOpen(false)}
+                        >
+                          <span>📋</span> My Applications
+                        </Link>
+                      )}
 
-                      {/* Employer */}
-                      <p className="px-4 pt-2 pb-2 text-xs font-bold uppercase tracking-widest text-slate-400">
-                        Employer
-                      </p>
-                      <Link
-                        to="/my-jobs"
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#0F4E7D]"
-                        onClick={() => setUserOpen(false)}
-                      >
-                        <span>💼</span> My Posted Jobs
-                      </Link>
-                      <Link
-                        to="/received-applications"
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#0F4E7D]"
-                        onClick={() => setUserOpen(false)}
-                      >
-                        <span>📥</span> Received Applications
-                      </Link>
+                      {/* Company / Admin */}
+                      {(authUser.role === "COMPANY" || authUser.role === "ADMIN") && (
+                        <>
+                          <div className="my-1 border-t border-slate-100" />
+                          <p className="px-4 pt-2 pb-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+                            Jobs
+                          </p>
+                          <Link
+                            to="/my-jobs"
+                            className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#0F4E7D]"
+                            onClick={() => setUserOpen(false)}
+                          >
+                            <span>💼</span> My Posted Jobs
+                          </Link>
+                          <Link
+                            to="/received-applications"
+                            className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#0F4E7D]"
+                            onClick={() => setUserOpen(false)}
+                          >
+                            <span>📥</span> Received Applications
+                          </Link>
+                        </>
+                      )}
+
+                      {/* Admin only */}
+                      {authUser.role === "ADMIN" && (
+                        <>
+                          <div className="my-1 border-t border-slate-100" />
+                          <p className="px-4 pt-2 pb-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+                            Admin
+                          </p>
+                          <Link
+                            to="/admin"
+                            className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#0F4E7D]"
+                            onClick={() => setUserOpen(false)}
+                          >
+                            <span>📊</span> Admin Dashboard
+                          </Link>
+                        </>
+                      )}
 
                       <div className="my-1 border-t border-slate-100" />
 

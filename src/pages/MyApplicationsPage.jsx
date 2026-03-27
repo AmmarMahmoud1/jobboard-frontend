@@ -1,3 +1,4 @@
+import { getAuthUser } from "../utils/auth";
 import { useEffect, useState } from "react";
 import { getApplicationsByUserId, deleteApplication } from "../services/applicationService";
 import { getJobById } from "../services/jobService";
@@ -9,14 +10,14 @@ function MyApplicationsPage() {
   const [revokingId, setRevokingId] = useState("");
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("authUser");
+    const storedUser = getAuthUser();
     if (!storedUser) {
       setError("No logged in user found");
       setLoading(false);
       return;
     }
 
-    const parsedUser = JSON.parse(storedUser);
+    const parsedUser = storedUser;
 
     getApplicationsByUserId(parsedUser.id)
       .then(async (data) => {
@@ -119,12 +120,6 @@ function MyApplicationsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Applied:{" "}
-                    {app.appliedAt
-                      ? new Date(app.appliedAt).toLocaleDateString()
-                      : "—"}
-                  </p>
                   {app.coverLetter && (
                     <p className="mt-2 text-sm text-app-text line-clamp-2 leading-relaxed">
                       {app.coverLetter}
