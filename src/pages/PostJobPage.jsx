@@ -69,7 +69,7 @@ function PostJobPage() {
           : [],
       });
 
-      navigate("/");
+      navigate("/my-jobs", { state: { toast: "Job posted successfully!", toastType: "success" } });
     } catch (err) {
       alert(err.message || "Failed to create job.");
     } finally {

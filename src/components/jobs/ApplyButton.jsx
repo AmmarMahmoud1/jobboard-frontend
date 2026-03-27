@@ -59,7 +59,7 @@ function ApplyButton({ jobId }) {
       setCvFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setIsOpen(false);
-      navigate("/my-applications");
+      navigate("/my-applications", { state: { toast: "Application submitted successfully!", toastType: "success" } });
     } catch (err) {
       setUploading(false);
       setMessage(err.message || "Failed to apply.");
@@ -80,21 +80,32 @@ function ApplyButton({ jobId }) {
     getUserById(u.id).then(setUserProfile).catch(() => {});
   }
 
+  const authUser = getAuthUser();
+  const isCompany = authUser?.role === "COMPANY" || authUser?.role === "ADMIN";
+
   return (
     <>
       <div className="flex items-center justify-between gap-4">
         <div>
           <h3 className="text-lg font-bold text-slate-800">Ready to apply?</h3>
           <p className="text-sm text-slate-500">
-            Add a cover letter and upload your CV as a PDF.
+            {isCompany
+              ? "Company accounts cannot apply to job listings."
+              : "Add a cover letter and upload your CV as a PDF."}
           </p>
         </div>
-        <button
-          onClick={handleOpen}
-          className="rounded-2xl bg-[#0F4E7D] px-6 py-3 font-bold text-white transition hover:bg-[#0A3A5D]"
-        >
-          Apply Now
-        </button>
+        {isCompany ? (
+          <span className="rounded-2xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-400 cursor-not-allowed">
+            Not Available
+          </span>
+        ) : (
+          <button
+            onClick={handleOpen}
+            className="rounded-2xl bg-[#0F4E7D] px-6 py-3 font-bold text-white transition hover:bg-[#0A3A5D]"
+          >
+            Apply Now
+          </button>
+        )}
       </div>
 
       {isOpen && (

@@ -1,9 +1,10 @@
 import { getAuthUser } from "../utils/auth";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getJobsByCreatedByUserId, deleteJob } from "../services/jobService";
 import { getApplicationsForCreator, updateApplicationStatus } from "../services/applicationService";
 import { getUserById } from "../services/getUserService";
+import Toast, { useToast } from "../components/common/Toast";
 
 function PostedJobsPage() {
   const [jobs, setJobs] = useState([]);
@@ -14,6 +15,15 @@ function PostedJobsPage() {
   const [updatingId, setUpdatingId] = useState("");
   const [deletingJobId, setDeletingJobId] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast, showToast } = useToast();
+
+  useEffect(() => {
+    if (location.state?.toast) {
+      showToast(location.state.toast, location.state.toastType || "success");
+      window.history.replaceState({}, "");
+    }
+  }, []);
 
   useEffect(() => {
     const storedUser = getAuthUser();
@@ -80,8 +90,9 @@ function PostedJobsPage() {
         delete next[jobId];
         return next;
       });
+      showToast("Job deleted successfully", "info");
     } catch (err) {
-      alert(err.message || "Failed to delete job");
+      showToast(err.message || "Failed to delete job", "error");
     } finally {
       setDeletingJobId("");
     }
@@ -97,8 +108,9 @@ function PostedJobsPage() {
           a.id === applicationId ? { ...a, status: updated.status } : a
         ),
       }));
+      showToast(`Status updated to ${newStatus.toLowerCase()}`, "success");
     } catch (err) {
-      alert(err.message || "Failed to update status");
+      showToast(err.message || "Failed to update status", "error");
     } finally {
       setUpdatingId("");
     }
@@ -122,6 +134,7 @@ function PostedJobsPage() {
 
   return (
     <div className="rounded-3xl border border-app-border bg-white p-6 shadow-soft">
+      <Toast toast={toast} />
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-app-text">My Posted Jobs</h1>

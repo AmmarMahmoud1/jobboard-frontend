@@ -58,7 +58,7 @@ function EditJobPage() {
           : [],
       });
 
-      navigate("/my-jobs");
+      navigate("/my-jobs", { state: { toast: "Job updated successfully!", toastType: "success" } });
     } catch (err) {
       alert(err.message || "Failed to update job.");
     } finally {

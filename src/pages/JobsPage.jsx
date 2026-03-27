@@ -46,9 +46,19 @@ function JobsPage() {
     setSelectedJob(null);
   }
 
+  function handleClear() {
+    setTitleInput("");
+    setLocationInput("");
+    setSearchTerm("");
+    setLocationTerm("");
+    setSelectedJob(null);
+  }
+
   function handleKeyDown(e) {
     if (e.key === "Enter") handleSearch();
   }
+
+  const isFiltered = searchTerm || locationTerm;
 
   const filteredJobs = jobs.filter((job) => {
     const titleMatch = searchTerm
@@ -72,6 +82,14 @@ function JobsPage() {
         {categoryParam && (
           <p className="text-blue-200 text-sm font-semibold mb-4 uppercase tracking-widest">
             {categoryParam.replace("_", " ")}
+          </p>
+        )}
+
+        {isFiltered && (
+          <p className="text-blue-300 text-xs mt-3">
+            Showing results for{searchTerm ? ` "${searchTerm}"` : ""}{locationTerm ? ` in ${locationTerm}` : ""}
+            {" — "}
+            <button onClick={handleClear} className="underline hover:text-white transition-colors">clear search</button>
           </p>
         )}
 
@@ -99,6 +117,14 @@ function JobsPage() {
           >
             Search
           </button>
+          {isFiltered && (
+            <button
+              onClick={handleClear}
+              className="px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all whitespace-nowrap"
+            >
+              ✕ Clear
+            </button>
+          )}
         </div>
       </header>
 

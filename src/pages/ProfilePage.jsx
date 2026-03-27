@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { getUserById, updateUser } from "../services/getUserService";
 import { getApplicationsByUserId, updateApplication } from "../services/applicationService";
 import { getJobById } from "../services/jobService";
+import Toast, { useToast } from "../components/common/Toast";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -16,6 +17,7 @@ function ProfilePage() {
   const [editingApp, setEditingApp] = useState(null);
   const [appEditData, setAppEditData] = useState({ coverLetter: "", cvUrl: "" });
   const [savingApp, setSavingApp] = useState(false);
+  const { toast, showToast } = useToast();
 
   useEffect(() => {
     const storedUser = getAuthUser();
@@ -80,6 +82,7 @@ function ProfilePage() {
       const updated = await updateUser(user.id, editData);
       setUser(updated);
       setEditing(false);
+      showToast("Profile saved successfully");
     } catch (err) {
       setSaveError(err.message || "Failed to save changes");
     } finally {
@@ -111,8 +114,9 @@ function ProfilePage() {
         prev.map((a) => (a.id === editingApp.id ? { ...a, ...updated } : a))
       );
       setEditingApp(null);
+      showToast("Application updated successfully");
     } catch (err) {
-      alert(err.message || "Failed to update application");
+      showToast(err.message || "Failed to update application", "error");
     } finally {
       setSavingApp(false);
     }
@@ -148,6 +152,7 @@ function ProfilePage() {
 
   return (
     <div>
+      <Toast toast={toast} />
       <div className="grid gap-6">
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Avatar / Role card */}
@@ -251,27 +256,42 @@ function ProfilePage() {
                 <label className={labelCls}>Postal Code</label>
                 <input name="postalCode" value={editData.postalCode} onChange={handleEditChange} className={inputCls} />
               </div>
-              <div>
-                <label className={labelCls}>University</label>
-                <input name="university" value={editData.university} onChange={handleEditChange} className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Degree Program</label>
-                <input name="degreeProgram" value={editData.degreeProgram} onChange={handleEditChange} className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Semester</label>
-                <input type="number" min="1" name="semester" value={editData.semester} onChange={handleEditChange} className={inputCls} />
-              </div>
+              {user.role === "COMPANY" ? (
+                <>
+                  <div>
+                    <label className={labelCls}>Company Name</label>
+                    <input name="university" value={editData.university} onChange={handleEditChange} className={inputCls} placeholder="Your company's registered name" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Legal Registration Number</label>
+                    <input name="degreeProgram" value={editData.degreeProgram} onChange={handleEditChange} className={inputCls} placeholder="e.g. HRB 12345" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className={labelCls}>University</label>
+                    <input name="university" value={editData.university} onChange={handleEditChange} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Degree Program</label>
+                    <input name="degreeProgram" value={editData.degreeProgram} onChange={handleEditChange} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Semester</label>
+                    <input type="number" min="1" name="semester" value={editData.semester} onChange={handleEditChange} className={inputCls} />
+                  </div>
+                </>
+              )}
               <div className="sm:col-span-2">
-                <label className={labelCls}>About Me</label>
+                <label className={labelCls}>{user.role === "COMPANY" ? "About the Company" : "About Me"}</label>
                 <textarea
                   name="aboutMe"
                   value={editData.aboutMe}
                   onChange={handleEditChange}
                   rows={3}
                   className={inputCls}
-                  placeholder="Tell us about yourself..."
+                  placeholder={user.role === "COMPANY" ? "Describe your company..." : "Tell us about yourself..."}
                 />
               </div>
             </div>
@@ -281,9 +301,18 @@ function ProfilePage() {
               <InfoCard label="Last Name" value={user.lastName} />
               <InfoCard label="Email" value={user.email} />
               <InfoCard label="Phone Number" value={user.phoneNumber} />
-              <InfoCard label="University" value={user.university} />
-              <InfoCard label="Degree Program" value={user.degreeProgram} />
-              <InfoCard label="Semester" value={user.semester} />
+              {user.role === "COMPANY" ? (
+                <>
+                  <InfoCard label="Company Name" value={user.university} />
+                  <InfoCard label="Legal Registration Number" value={user.degreeProgram} />
+                </>
+              ) : (
+                <>
+                  <InfoCard label="University" value={user.university} />
+                  <InfoCard label="Degree Program" value={user.degreeProgram} />
+                  <InfoCard label="Semester" value={user.semester} />
+                </>
+              )}
               <InfoCard label="Country" value={user.country} />
               <div className="sm:col-span-2">
                 <InfoCard
